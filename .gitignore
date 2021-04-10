@@ -112,3 +112,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+newParser.py
+numbers-all.txt
+numbers.txt
+Output.txt
