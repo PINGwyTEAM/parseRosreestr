@@ -12,7 +12,6 @@ from lxml import html
 MAIN_PAGE = 'https://rosreestr.gov.ru/wps/portal/p/cc_ib_portal_services/online_request/'
 TO_FIND = ['Кадастровый номер:', 'Адрес (местоположение):', '(ОКС) Тип:', 'Площадь ОКС\'a:', 'Кадастровая стоимость:', 'Дата обновления информации:', 'Статус объекта:', 'Дата постановки на кадастровый учет:', 'Дата внесения стоимости:', 'Дата определения стоимости:']
 DICT = {'Кадастровый номер:':'0', 'Адрес (местоположение):':'1', '(ОКС) Тип:':'2', 'Площадь ОКС\'a:':'3', 'Кадастровая стоимость:':'4', 'Дата обновления информации:':'5', 'Статус объекта:':'6', 'Дата постановки на кадастровый учет:':'7', 'Дата внесения стоимости:':'8', 'Дата определения стоимости:':'9'}
-List = ['n/d' for a in range(10)]
 
 #Запуск Хрома
 def startChrome():
@@ -30,6 +29,7 @@ def wait_element (path):
         driver.refresh()
     return driver.find_element_by_xpath(path)
 
+#Форматирование "некрасивых" строк
 def format(string):
     while '' in string:
         for char in range(len(string)):
@@ -39,8 +39,8 @@ def format(string):
     return ' '.join(string)
 
 #Сбор данных со страницы
-def collect_data(source):  
-    global List
+def collect_data(source):
+    List = ['n/d' for a in range(12)]
     try:
         _count = len(source.xpath('//*[@id="layoutContainers"]/div[4]/div/div[2]/section/div[2]/div[2]/table/tbody/tr[5]/td/table/tbody/text()')) + 1
         for i in range(_count):
@@ -56,40 +56,28 @@ def collect_data(source):
                         List[int(DICT[_key])] = value
             except:
                 pass
-    except:
-        print(str(datetime.datetime.now()), '\t', 'Incorrect page!') #Ведение лога
-    List += collect_data_2(source)
-    return List
-
-# Собирает Право и Ограничения
-def collect_data_2(source):
-    try:
         _count = len(source.xpath('//*[@id="r_enc"]/table/tbody/text()')) + 1
-        law = ''
-        restriction = ''
         for i in range(3, _count):
             try:
                 key_law = source.xpath(f'//*[@id="r_enc"]/table/tbody/tr[{i}]/td[1]/text()')[0].replace('\n', '').split(' ')
+                print(key_law)
                 if key_law != '':
-                    law += format(key_law) + '; '
+                    List[10] += format(key_law) + '; '
             except:
                 pass
             try:
                 key_restriction = source.xpath(f'//*[@id="r_enc"]/table/tbody/tr[{i}]/td[2]/text()')[0].replace('\n', '').split(' ')
+                print(key_restriction)
                 if key_restriction != '':
-                    restriction += format(key_restriction) + '; '
+                    List[11] += format(key_restriction) + '; '
             except:
                 pass
     except:
         print(str(datetime.datetime.now()), '\t', 'Incorrect page!') #Ведение лога
-    if law == '':
-        law = 'n/d'
-    if restriction == '':
-        restriction = 'n/d'
-    return [law, restriction]
+    return List
 
 
-#Отправления запроса
+#Отправка запроса
 def execute_request(number):
     try:
         inputField = wait_element('//*[@id="online_request_search_form_span"]/table/tbody/tr[1]/td[1]/table/tbody/tr[3]/td/table[1]/tbody/tr[2]/td[3]/input')
@@ -112,13 +100,11 @@ def execute_request(number):
         print(str(datetime.datetime.now()), '\t', 'Error sending request!') #Ведение лога
     return List
 
-#запускаем браузер
-driver = startChrome() 
-#переходим на веб-страницу ранее упомняутого сервиса
-driver.get(MAIN_PAGE) 
+driver = startChrome() #Запуск браузера
+driver.get(MAIN_PAGE) #Переход на веб-страницу ранее упомняутого сервиса
 print(str(datetime.datetime.now()), '\t', 'Page loaded!') #Ведение лога
 
-#циклически извлекаем кадастровые номера объектов недвижимости из списка
+#Циклическое извлечение кадастровых номеров объектов недвижимости из файла
 with open ('numbers.txt', 'r', encoding = 'utf-8') as File:
     COUNT = 1
     for Line in File:
@@ -137,5 +123,5 @@ with open ('numbers.txt', 'r', encoding = 'utf-8') as File:
             print(str(datetime.datetime.now()), '\t', 'No button!') #Ведение лога
         COUNT += 1
 
-#по завершению цикла закрыть браузер
+#Закрыте браузера после завершения цикла 
 driver.close()
