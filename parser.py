@@ -65,13 +65,12 @@ def collect_data(source):
             try:
                 key_law = format(source.xpath(f'//*[@id="r_enc"]/table/tbody/tr[{i}]/td[1]/text()')[0])
                 if key_law == '':
-                    key_law += 'n/d'              
-                List += key_law + '\t'
+                    key_law += 'n/d'  
+                List += [key_law]
             except:
                 pass
             try:
                 count_ = len(source.xpath(f'//*[@id="r_enc"]/table/tbody/tr[{i}]/td[2]/table/tbody/text()'))
-                print('cnt:', count_)
                 key_restriction = ''
                 if count_ == 0:
                     key_restriction += 'n/d'
@@ -80,7 +79,7 @@ def collect_data(source):
                 else:
                     for j in range(1, count_ + 1):
                         key_restriction += format(source.xpath(f'//*[@id="r_enc"]/table/tbody/tr[{i}]/td[2]/table/tbody/tr[{j}]/td/text()')[0]) + '; '
-                List += key_restriction + '\t'
+                List += [key_restriction]
             except:
                 pass
     except:
