@@ -106,6 +106,7 @@ def execute_request(number):
             sleep(1)
         except:
             log('Data not found!')
+            return [number]
     except:
         log('Error sending request!')
     return List
